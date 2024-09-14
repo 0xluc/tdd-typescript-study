@@ -1,10 +1,10 @@
 module.exports = {
-    roots: ['<rootDir>/src'],
-    testEnvironmnet: 'node',
+    roots: ["<rootDir>/src"],
+    testEnvironmnet: "node",
     transform: {
-        '.\\.ts': 'ts-jest'
+        ".+\\.ts$": "ts-jest",
     },
     moduleNameMapper: {
-        '@/(.*)': '<rootDir>/src/$1'
-    }
-}
+        "@/(.*)": "<rootDir>/src/$1",
+    },
+};
