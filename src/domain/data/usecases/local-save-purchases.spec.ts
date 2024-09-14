@@ -1,5 +1,5 @@
 class LocalSavePurchases {
-    constructor(private readonly cacheStore: CacheStore) {}
+    constructor(private readonly cacheStore: CacheStore) { }
 
     async save(): Promise<void> {
         this.cacheStore.delete("purchases");
@@ -42,10 +42,6 @@ describe("LocalSavePurchases", () => {
         const { cacheStore, sut } = makeSut();
         sut.save();
         expect(cacheStore.deleteCallsCount).toBe(1);
-    });
-    test("Should call delete with correct key", async () => {
-        const { cacheStore, sut } = makeSut();
-        sut.save();
         expect(cacheStore.key).toBe("purchases");
     });
 });
