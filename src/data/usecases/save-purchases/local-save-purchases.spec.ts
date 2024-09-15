@@ -1,19 +1,5 @@
-import { CacheStore } from "@/data/protocols/cache";
+import { CacheStoreSpy, mockPurchases } from "@/data/tests";
 import { LocalSavePurchases } from "@/data/usecases";
-import { SavePurchases } from "@/domain";
-
-const mockPurchases = (): Array<SavePurchases.Params> => [
-    {
-        id: "1",
-        date: new Date(),
-        value: 50,
-    },
-    {
-        id: "2",
-        date: new Date(),
-        value: 70,
-    },
-];
 
 type SutTypes = {
     sut: LocalSavePurchases;
@@ -29,23 +15,6 @@ const makeSut = (): SutTypes => {
     };
 };
 
-class CacheStoreSpy implements CacheStore {
-    deleteKey: string;
-    deleteCallsCount = 0;
-    insertCallsCount = 0;
-    insertKey: string;
-    insertValues: Array<SavePurchases.Params> = [];
-    delete(key: string): void {
-        this.deleteCallsCount++;
-        this.deleteKey = key;
-    }
-    insert(key: string, value: any): void {
-        this.insertCallsCount++;
-        this.insertKey = key;
-        this.insertValues = value;
-    }
-}
-
 describe("LocalSavePurchases", () => {
     test("Should not delete cache on sut.init", () => {
         const { cacheStore } = makeSut();
@@ -59,9 +28,7 @@ describe("LocalSavePurchases", () => {
     });
     test("Should not insert new Cache if delete fails", () => {
         const { cacheStore, sut } = makeSut();
-        jest.spyOn(cacheStore, "delete").mockImplementationOnce(() => {
-            throw new Error();
-        });
+        cacheStore.simulateDeleteError();
         const promise = sut.save(mockPurchases());
         expect(cacheStore.insertCallsCount).toBe(0);
         expect(promise).rejects.toThrow();
@@ -74,5 +41,11 @@ describe("LocalSavePurchases", () => {
         expect(cacheStore.insertCallsCount).toBe(1);
         expect(cacheStore.insertKey).toBe("purchases");
         expect(cacheStore.insertValues).toEqual(purchases);
+    });
+    test("Should throw if insert throws", () => {
+        const { cacheStore, sut } = makeSut();
+        cacheStore.simulateInsertError();
+        const promise = sut.save(mockPurchases());
+        expect(promise).rejects.toThrow();
     });
 });
