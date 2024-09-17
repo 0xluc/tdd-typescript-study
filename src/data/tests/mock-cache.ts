@@ -1,15 +1,26 @@
 import { SavePurchases } from "@/domain/usecases";
 import { CacheStore } from "@/data/protocols/cache";
 
+const maxAgeInDays = 3;
+
+export const getCacheExpirationDate = (timestamp: Date): Date => {
+    const maxCacheAge = new Date(timestamp);
+    timestamp.setDate(maxCacheAge.getDate() - maxAgeInDays);
+    return maxCacheAge;
+};
+
 export class CacheStoreSpy implements CacheStore {
     actions: Array<CacheStoreSpy.Action> = [];
     deleteKey: string;
     insertKey: string;
     fetchKey: string;
     insertValues: Array<SavePurchases.Params> = [];
-    fetch(key: string): void {
+    fetchResult: any;
+
+    fetch(key: string): any {
         this.actions.push(CacheStoreSpy.Action.fetch);
         this.fetchKey = key;
+        return this.fetchResult;
     }
     delete(key: string): void {
         this.actions.push(CacheStoreSpy.Action.delete);
@@ -36,6 +47,14 @@ export class CacheStoreSpy implements CacheStore {
         jest.spyOn(CacheStoreSpy.prototype, "insert").mockImplementationOnce(
             () => {
                 this.actions.push(CacheStoreSpy.Action.insert);
+                throw new Error();
+            }
+        );
+    }
+    simulateFetchError(): void {
+        jest.spyOn(CacheStoreSpy.prototype, "fetch").mockImplementationOnce(
+            () => {
+                this.actions.push(CacheStoreSpy.Action.fetch);
                 throw new Error();
             }
         );
